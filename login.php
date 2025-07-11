@@ -19,6 +19,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
+if ($user && password_verify($password, $user["password"])) {
+    if (!$user['is_verified']) {
+        $error = "กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ";
+    } else {
+        $_SESSION["user"] = $user["id"];
+        header("Location: dashboard.php");
+        exit;
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
