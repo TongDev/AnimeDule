@@ -154,7 +154,7 @@ $reviews = $reviews_stmt->fetchAll(PDO::FETCH_ASSOC);
                             </select>
                         </div>
                         <button type="submit" class="btn btn-primary" <?= count($user_favorites) == count($platforms) ? 'disabled' : '' ?>>
-                            <?= count($user_favorites) == count($platforms) ? 'เพิ่มครบแล้ว' : 'เพิ่ม Favorite' ?>
+                            <?= count($user_favorites) == count($platforms) ? 'เพิ่มแล้ว' : 'เพิ่ม Favorite' ?>
                         </button>
                     </form>
 
