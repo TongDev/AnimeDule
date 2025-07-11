@@ -1,0 +1,40 @@
+body {
+    background: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    color: #ffd700 !important; /* สีทอง */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+}
+.card {
+    transition: all 0.3s ease-in-out;
+    border-radius: 0.75rem;
+    border: none;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+.card-text.text-truncate {
+    max-height: 3.6em; /* จำกัดความสูงซัก 3 บรรทัด */
+    overflow: hidden;
+}
+footer {
+    margin-top: auto;
+    padding: 1rem 0;
+    background-color: #212529;
+    color: #ddd;
+    text-align: center;
+    font-size: 0.9rem;
+}
+/* Notification bell */
+.nav-link.position-relative {
+    font-size: 1.5rem;
+    cursor: pointer;
+}

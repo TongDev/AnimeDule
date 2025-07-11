@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 10, 2025 at 11:49 PM
+-- Generation Time: Jul 11, 2025 at 11:18 AM
 -- Server version: 10.4.25-MariaDB
 -- PHP Version: 8.1.10
 
@@ -51,16 +51,17 @@ CREATE TABLE `anime` (
   `total_episodes` int(11) DEFAULT NULL,
   `status` enum('ongoing','finished') COLLATE utf8mb4_unicode_ci DEFAULT 'ongoing',
   `season_id` int(11) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `next_episode_air_time` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `anime`
 --
 
-INSERT INTO `anime` (`id`, `title_en`, `title_alt`, `synopsis`, `cover_image`, `source`, `studio`, `total_episodes`, `status`, `season_id`, `created_at`) VALUES
-(1, 'Solo Leveling', NULL, 'ในโลกที่มีประตูมิติปริศนาเปิดออก...', 'https://i.imgur.com/your_image_url.jpg', 'Webtoon', 'A-1 Pictures', 12, 'ongoing', 2, '2025-07-10 20:35:55'),
-(2, 'My Hero Academia', 'Boku no Hero Academia', 'โลกที่ทุกคนมีพลังพิเศษ...', 'https://i.imgur.com/your_cover_url.jpg', 'Manga', 'Bones', 13, 'ongoing', 2, '2025-07-10 20:42:05');
+INSERT INTO `anime` (`id`, `title_en`, `title_alt`, `synopsis`, `cover_image`, `source`, `studio`, `total_episodes`, `status`, `season_id`, `created_at`, `next_episode_air_time`) VALUES
+(1, 'Solo Leveling', NULL, 'ในโลกที่มีประตูมิติปริศนาเปิดออก...', 'https://www.mixmagazine.in.th/media/images/upload/files/000014411/1737516264_sll-210168-01.jpg', 'Webtoon', 'A-1 Pictures', 12, 'ongoing', 2, '2025-07-10 20:35:55', '2025-07-15 14:05:35'),
+(2, 'My Hero Academia', 'Boku no Hero Academia', 'โลกที่ทุกคนมีพลังพิเศษ...', 'https://m.media-amazon.com/images/S/pv-target-images/c5b267aeb5b6882024f75db745bb009c8fd7a95dfdd2743105f3ea6132d434d7.jpg', 'Manga', 'Bones', 13, 'ongoing', 2, '2025-07-10 20:42:05', '2025-07-16 20:04:50');
 
 -- --------------------------------------------------------
 
@@ -114,7 +115,7 @@ CREATE TABLE `favorites` (
 --
 
 INSERT INTO `favorites` (`id`, `user_id`, `anime_id`, `platform_id`, `created_at`) VALUES
-(1, 1, 1, 1, '2025-07-10 21:25:32');
+(2, 8, 1, 1, '2025-07-11 08:51:46');
 
 -- --------------------------------------------------------
 
@@ -214,15 +215,18 @@ CREATE TABLE `users` (
   `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `email_verified` tinyint(1) DEFAULT 0,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `is_verified` tinyint(1) DEFAULT 0,
+  `verification_token` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` enum('inactive','active') COLLATE utf8mb4_unicode_ci DEFAULT 'inactive'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `password`, `email_verified`, `created_at`) VALUES
-(1, '9PJ', '9pj.040941@gmail.com', '$2y$10$HCXpO8qwjvCbc4vkabNB5eICoO2RPlSjm8GO5.XHKYSAPgGdgibLC', 0, '2025-07-10 20:32:30');
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `email_verified`, `created_at`, `is_verified`, `verification_token`, `status`) VALUES
+(8, '9PJ', '9pj.040941@gmail.com', '$2y$10$PjS1yMVCN8i0fZzBKEdQHOEUQKW2G34EbUJ3y3X/6e7rJpMq8On0q', 0, '2025-07-11 08:28:13', 0, NULL, 'active');
 
 --
 -- Indexes for dumped tables
@@ -339,7 +343,7 @@ ALTER TABLE `anime_platforms`
 -- AUTO_INCREMENT for table `favorites`
 --
 ALTER TABLE `favorites`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `genres`
@@ -375,7 +379,7 @@ ALTER TABLE `seasons`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Constraints for dumped tables
