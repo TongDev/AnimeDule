@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 11, 2025 at 11:18 AM
+-- Generation Time: Jul 12, 2025 at 12:02 PM
 -- Server version: 10.4.25-MariaDB
 -- PHP Version: 8.1.10
 
@@ -107,15 +107,16 @@ CREATE TABLE `favorites` (
   `user_id` int(11) NOT NULL,
   `anime_id` int(11) NOT NULL,
   `platform_id` int(11) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `favorites`
 --
 
-INSERT INTO `favorites` (`id`, `user_id`, `anime_id`, `platform_id`, `created_at`) VALUES
-(2, 8, 1, 1, '2025-07-11 08:51:46');
+INSERT INTO `favorites` (`id`, `user_id`, `anime_id`, `platform_id`, `created_at`, `updated_at`) VALUES
+(4, 10, 1, 1, '2025-07-12 08:46:01', NULL);
 
 -- --------------------------------------------------------
 
@@ -214,19 +215,15 @@ CREATE TABLE `users` (
   `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `email_verified` tinyint(1) DEFAULT 0,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `is_verified` tinyint(1) DEFAULT 0,
-  `verification_token` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `status` enum('inactive','active') COLLATE utf8mb4_unicode_ci DEFAULT 'inactive'
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `password`, `email_verified`, `created_at`, `is_verified`, `verification_token`, `status`) VALUES
-(8, '9PJ', '9pj.040941@gmail.com', '$2y$10$PjS1yMVCN8i0fZzBKEdQHOEUQKW2G34EbUJ3y3X/6e7rJpMq8On0q', 0, '2025-07-11 08:28:13', 0, NULL, 'active');
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `created_at`) VALUES
+(10, '9PJ', '9pj.040941@gmail.com', '$2y$10$WZ8TXzE.hZm78h425iurKu8R3fg02FHZcu1/YbWcOY9h.P/5UMZ7a', '2025-07-12 06:29:49');
 
 --
 -- Indexes for dumped tables
@@ -266,7 +263,7 @@ ALTER TABLE `anime_platforms`
 --
 ALTER TABLE `favorites`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`),
+  ADD UNIQUE KEY `unique_favorite` (`user_id`,`anime_id`,`platform_id`),
   ADD KEY `anime_id` (`anime_id`),
   ADD KEY `platform_id` (`platform_id`);
 
@@ -343,7 +340,7 @@ ALTER TABLE `anime_platforms`
 -- AUTO_INCREMENT for table `favorites`
 --
 ALTER TABLE `favorites`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `genres`
@@ -379,7 +376,7 @@ ALTER TABLE `seasons`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- Constraints for dumped tables

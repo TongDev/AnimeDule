@@ -13,7 +13,7 @@ $user_id = $_SESSION['user'];
 // ดึงข้อมูลผู้ใช้
 $stmt = $pdo->prepare("SELECT id, name, email FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
-$user = $stmt->fetch();
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$user) {
     session_destroy();
@@ -21,12 +21,23 @@ if (!$user) {
     exit;
 }
 
-// ดึงรายการ Anime ที่ผู้ใช้ Favorite
+// ดึงรายการ Anime ที่ผู้ใช้ Favorite (พร้อม studios แบบเดียวกับ index.php)
 $stmt = $pdo->prepare("
-    SELECT a.id, a.title_en, a.next_episode_air_time
+    SELECT 
+        a.id, 
+        a.title_en, a.title_romaji, a.title_native,
+        a.next_episode_air_time,
+        st.code AS status,
+        src.code AS source,
+        GROUP_CONCAT(DISTINCT stu.name ORDER BY stu.name SEPARATOR ', ') AS studios
     FROM favorites fa
     JOIN anime a ON fa.anime_id = a.id
+    LEFT JOIN statuses st ON a.status_id = st.id
+    LEFT JOIN sources src ON a.source_id = src.id
+    LEFT JOIN anime_studios ast ON a.id = ast.anime_id
+    LEFT JOIN studios stu ON ast.studio_id = stu.id
     WHERE fa.user_id = ?
+    GROUP BY a.id
     ORDER BY a.next_episode_air_time ASC
 ");
 $stmt->execute([$user_id]);
@@ -35,7 +46,9 @@ $favoriteAnime = $stmt->fetchAll();
 // ดึง Anime ที่จะฉายในวันนี้ (แจ้งเตือน)
 $today = date('Y-m-d');
 $stmt = $pdo->prepare("
-    SELECT a.title_en, a.next_episode_air_time
+    SELECT 
+        a.title_en, a.title_romaji, a.title_native,
+        a.next_episode_air_time
     FROM favorites fa
     JOIN anime a ON fa.anime_id = a.id
     WHERE fa.user_id = ? AND DATE(a.next_episode_air_time) = ?
@@ -44,8 +57,20 @@ $stmt = $pdo->prepare("
 $stmt->execute([$user_id, $today]);
 $todayAnimes = $stmt->fetchAll();
 
-// ดึง Anime แนะนำ (สมมติ)
-$stmt = $pdo->query("SELECT id, title_en FROM anime ORDER BY created_at DESC LIMIT 5");
+// ดึง Anime แนะนำ (ล่าสุด 5 เรื่อง) แบบ studios เหมือนกัน
+$stmt = $pdo->query("
+    SELECT 
+        a.id, 
+        a.title_en, a.title_romaji, a.title_native,
+        GROUP_CONCAT(DISTINCT stu.name ORDER BY stu.name SEPARATOR ', ') AS studios
+    FROM anime a
+    LEFT JOIN anime_studios ast ON a.id = ast.anime_id
+    LEFT JOIN studios stu ON ast.studio_id = stu.id
+    WHERE a.title_en IS NOT NULL OR a.title_romaji IS NOT NULL OR a.title_native IS NOT NULL
+    GROUP BY a.id
+    ORDER BY a.created_at DESC 
+    LIMIT 5
+");
 $recommendedAnime = $stmt->fetchAll();
 ?>
 
@@ -58,51 +83,9 @@ $recommendedAnime = $stmt->fetchAll();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
     <link rel="stylesheet" href="assets/css/style.css" />
 </head>
-<body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-  <div class="container">
-    <a class="navbar-brand" href="index.php">AnimeDule</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navmenu"
-      aria-controls="navmenu" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+<body class="bg-light">
 
-    <div class="collapse navbar-collapse" id="navmenu">
-      <ul class="navbar-nav ms-auto align-items-center">
-        <?php if (isset($user) && $user): ?>
-        <!-- ถ้า login แล้ว -->
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-             data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="bi bi-person-circle"></i> <?= htmlspecialchars($user['name']) ?>
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-            <li><a class="dropdown-item" href="dashboard.php">Dashboard</a></li>
-            <li><a class="dropdown-item" href="favorite.php">รายการโปรด</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="logout.php">ออกจากระบบ</a></li>
-          </ul>
-        </li>
-        <?php else: ?>
-        <!-- ถ้ายังไม่ได้ login -->
-        <li class="nav-item"><a class="nav-link" href="login.php">เข้าสู่ระบบ</a></li>
-        <li class="nav-item"><a class="nav-link" href="register.php">สมัครสมาชิก</a></li>
-        <?php endif; ?>
-                <!-- 🔔 Notification -->
-        <li class="nav-item dropdown me-3">
-          <a class="nav-link position-relative" href="#" id="notifDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            🔔
-            <span id="notifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none;">0</span>
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notifDropdown" style="max-height:300px; overflow-y:auto;" id="notifList">
-            <li><span class="dropdown-item-text">ไม่มีแจ้งเตือนใหม่</span></li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-  </div>
-</nav>
-
+<?php include 'includes/navbar.php'; ?>
 
 <div class="container py-4">
   <h1>สวัสดี, <?= htmlspecialchars($user['name']) ?></h1>
@@ -114,11 +97,23 @@ $recommendedAnime = $stmt->fetchAll();
   <?php if (count($favoriteAnime) > 0): ?>
     <div class="list-group">
       <?php foreach ($favoriteAnime as $anime): ?>
-        <a href="anime.php?id=<?= (int)$anime['id'] ?>" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-          <?= htmlspecialchars($anime['title_en']) ?>
-          <small class="text-muted">
-            ตอนต่อไป: <?= $anime['next_episode_air_time'] ? date('d M Y H:i', strtotime($anime['next_episode_air_time'])) : 'ไม่ระบุ' ?>
-          </small>
+        <?php
+          $title = $anime['title_en'] ?: ($anime['title_romaji'] ?: $anime['title_native'] ?: '-');
+        ?>
+        <a href="anime.php?id=<?= (int)$anime['id'] ?>" class="list-group-item list-group-item-action">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <strong><?= htmlspecialchars($title) ?></strong><br>
+              <small class="text-muted">
+                สถานะ: <?= htmlspecialchars($anime['status'] ?? '-') ?> | 
+                ต้นฉบับ: <?= htmlspecialchars($anime['source'] ?? '-') ?> | 
+                สตูดิโอ: <?= $anime['studios'] ? htmlspecialchars($anime['studios']) : 'ไม่ทราบ' ?>
+              </small>
+            </div>
+            <small class="text-muted">
+              ตอนต่อไป: <?= $anime['next_episode_air_time'] ? date('d M Y H:i', strtotime($anime['next_episode_air_time'])) : 'ไม่ระบุ' ?>
+            </small>
+          </div>
         </a>
       <?php endforeach; ?>
     </div>
@@ -132,8 +127,11 @@ $recommendedAnime = $stmt->fetchAll();
   <?php if (count($todayAnimes) > 0): ?>
     <ul class="list-group mb-4">
       <?php foreach ($todayAnimes as $anime): ?>
+        <?php
+          $title = $anime['title_en'] ?: ($anime['title_romaji'] ?: $anime['title_native'] ?: '-');
+        ?>
         <li class="list-group-item d-flex justify-content-between align-items-center">
-          <?= htmlspecialchars($anime['title_en']) ?>
+          <?= htmlspecialchars($title) ?>
           <span class="badge bg-info"><?= date('H:i', strtotime($anime['next_episode_air_time'])) ?></span>
         </li>
       <?php endforeach; ?>
@@ -147,8 +145,16 @@ $recommendedAnime = $stmt->fetchAll();
   <h2>Anime แนะนำ</h2>
   <ul class="list-group">
     <?php foreach ($recommendedAnime as $anime): ?>
+      <?php
+        $title = $anime['title_en'] ?: ($anime['title_romaji'] ?: $anime['title_native'] ?: '-');
+      ?>
       <li class="list-group-item">
-        <a href="anime.php?id=<?= (int)$anime['id'] ?>"><?= htmlspecialchars($anime['title_en']) ?></a>
+        <a href="anime.php?id=<?= (int)$anime['id'] ?>">
+          <?= htmlspecialchars($title) ?>
+        </a>
+        <small class="text-muted d-block">
+          ผลิตโดย: <?= $anime['studios'] ? htmlspecialchars($anime['studios']) : 'ไม่ทราบ' ?>
+        </small>
       </li>
     <?php endforeach; ?>
   </ul>
