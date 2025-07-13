@@ -1,0 +1,491 @@
+﻿Folder PATH listing
+Volume serial number is C002-A7F4
+C:.
+ณ   anime.php
+ณ   anime_lookup.php
+ณ   dashboard.php
+ณ   favorite.php
+ณ   fetch_anime.php
+ณ   index.php
+ณ   login.php
+ณ   logout.php
+ณ   register.php
+ณ   review_action.php
+ณ   structure.txt
+ณ   
+?ฤฤฤapi
+ณ       debug_sql.txt
+ณ       favorite_action.php
+ณ       favorite_toggle.php
+ณ       notifications.php
+ณ       search_anime.php
+ณ       search_filter.php
+ณ       
+?ฤฤฤassets
+ณ   ?ฤฤฤcss
+ณ   ณ       style.css
+ณ   ณ       
+ณ   ภฤฤฤimg
+ณ           default_cover.png
+ณ           
+?ฤฤฤconfig
+ณ       database.php
+ณ       
+?ฤฤฤhtmlpurifier
+ณ   ภฤฤฤlibrary
+ณ       ณ   HTMLPurifier.auto.php
+ณ       ณ   HTMLPurifier.autoload-legacy.php
+ณ       ณ   HTMLPurifier.autoload.php
+ณ       ณ   HTMLPurifier.composer.php
+ณ       ณ   HTMLPurifier.func.php
+ณ       ณ   HTMLPurifier.includes.php
+ณ       ณ   HTMLPurifier.kses.php
+ณ       ณ   HTMLPurifier.path.php
+ณ       ณ   HTMLPurifier.php
+ณ       ณ   HTMLPurifier.safe-includes.php
+ณ       ณ   
+ณ       ภฤฤฤHTMLPurifier
+ณ           ณ   Arborize.php
+ณ           ณ   AttrCollections.php
+ณ           ณ   AttrDef.php
+ณ           ณ   AttrTransform.php
+ณ           ณ   AttrTypes.php
+ณ           ณ   AttrValidator.php
+ณ           ณ   Bootstrap.php
+ณ           ณ   ChildDef.php
+ณ           ณ   Config.php
+ณ           ณ   ConfigSchema.php
+ณ           ณ   ContentSets.php
+ณ           ณ   Context.php
+ณ           ณ   CSSDefinition.php
+ณ           ณ   Definition.php
+ณ           ณ   DefinitionCache.php
+ณ           ณ   DefinitionCacheFactory.php
+ณ           ณ   Doctype.php
+ณ           ณ   DoctypeRegistry.php
+ณ           ณ   ElementDef.php
+ณ           ณ   Encoder.php
+ณ           ณ   EntityLookup.php
+ณ           ณ   EntityParser.php
+ณ           ณ   ErrorCollector.php
+ณ           ณ   ErrorStruct.php
+ณ           ณ   Exception.php
+ณ           ณ   Filter.php
+ณ           ณ   Generator.php
+ณ           ณ   HTMLDefinition.php
+ณ           ณ   HTMLModule.php
+ณ           ณ   HTMLModuleManager.php
+ณ           ณ   IDAccumulator.php
+ณ           ณ   Injector.php
+ณ           ณ   Language.php
+ณ           ณ   LanguageFactory.php
+ณ           ณ   Length.php
+ณ           ณ   Lexer.php
+ณ           ณ   Node.php
+ณ           ณ   PercentEncoder.php
+ณ           ณ   Printer.php
+ณ           ณ   PropertyList.php
+ณ           ณ   PropertyListIterator.php
+ณ           ณ   Queue.php
+ณ           ณ   Strategy.php
+ณ           ณ   StringHash.php
+ณ           ณ   StringHashParser.php
+ณ           ณ   TagTransform.php
+ณ           ณ   Token.php
+ณ           ณ   TokenFactory.php
+ณ           ณ   UnitConverter.php
+ณ           ณ   URI.php
+ณ           ณ   URIDefinition.php
+ณ           ณ   URIFilter.php
+ณ           ณ   URIParser.php
+ณ           ณ   URIScheme.php
+ณ           ณ   URISchemeRegistry.php
+ณ           ณ   VarParser.php
+ณ           ณ   VarParserException.php
+ณ           ณ   Zipper.php
+ณ           ณ   
+ณ           ?ฤฤฤAttrDef
+ณ           ณ   ณ   Clone.php
+ณ           ณ   ณ   CSS.php
+ณ           ณ   ณ   Enum.php
+ณ           ณ   ณ   Integer.php
+ณ           ณ   ณ   Lang.php
+ณ           ณ   ณ   Switch.php
+ณ           ณ   ณ   Text.php
+ณ           ณ   ณ   URI.php
+ณ           ณ   ณ   
+ณ           ณ   ?ฤฤฤCSS
+ณ           ณ   ณ       AlphaValue.php
+ณ           ณ   ณ       Background.php
+ณ           ณ   ณ       BackgroundPosition.php
+ณ           ณ   ณ       Border.php
+ณ           ณ   ณ       Color.php
+ณ           ณ   ณ       Composite.php
+ณ           ณ   ณ       DenyElementDecorator.php
+ณ           ณ   ณ       Filter.php
+ณ           ณ   ณ       Font.php
+ณ           ณ   ณ       FontFamily.php
+ณ           ณ   ณ       Ident.php
+ณ           ณ   ณ       ImportantDecorator.php
+ณ           ณ   ณ       Length.php
+ณ           ณ   ณ       ListStyle.php
+ณ           ณ   ณ       Multiple.php
+ณ           ณ   ณ       Number.php
+ณ           ณ   ณ       Percentage.php
+ณ           ณ   ณ       Ratio.php
+ณ           ณ   ณ       TextDecoration.php
+ณ           ณ   ณ       URI.php
+ณ           ณ   ณ       
+ณ           ณ   ?ฤฤฤHTML
+ณ           ณ   ณ       Bool.php
+ณ           ณ   ณ       Class.php
+ณ           ณ   ณ       Color.php
+ณ           ณ   ณ       ContentEditable.php
+ณ           ณ   ณ       FrameTarget.php
+ณ           ณ   ณ       ID.php
+ณ           ณ   ณ       Length.php
+ณ           ณ   ณ       LinkTypes.php
+ณ           ณ   ณ       MultiLength.php
+ณ           ณ   ณ       Nmtokens.php
+ณ           ณ   ณ       Pixels.php
+ณ           ณ   ณ       
+ณ           ณ   ภฤฤฤURI
+ณ           ณ       ณ   Email.php
+ณ           ณ       ณ   Host.php
+ณ           ณ       ณ   IPv4.php
+ณ           ณ       ณ   IPv6.php
+ณ           ณ       ณ   
+ณ           ณ       ภฤฤฤEmail
+ณ           ณ               SimpleCheck.php
+ณ           ณ               
+ณ           ?ฤฤฤAttrTransform
+ณ           ณ       Background.php
+ณ           ณ       BdoDir.php
+ณ           ณ       BgColor.php
+ณ           ณ       BoolToCSS.php
+ณ           ณ       Border.php
+ณ           ณ       EnumToCSS.php
+ณ           ณ       ImgRequired.php
+ณ           ณ       ImgSpace.php
+ณ           ณ       Input.php
+ณ           ณ       Lang.php
+ณ           ณ       Length.php
+ณ           ณ       Name.php
+ณ           ณ       NameSync.php
+ณ           ณ       Nofollow.php
+ณ           ณ       SafeEmbed.php
+ณ           ณ       SafeObject.php
+ณ           ณ       SafeParam.php
+ณ           ณ       ScriptRequired.php
+ณ           ณ       TargetBlank.php
+ณ           ณ       TargetNoopener.php
+ณ           ณ       TargetNoreferrer.php
+ณ           ณ       Textarea.php
+ณ           ณ       
+ณ           ?ฤฤฤChildDef
+ณ           ณ       Chameleon.php
+ณ           ณ       Custom.php
+ณ           ณ       Empty.php
+ณ           ณ       List.php
+ณ           ณ       Optional.php
+ณ           ณ       Required.php
+ณ           ณ       StrictBlockquote.php
+ณ           ณ       Table.php
+ณ           ณ       
+ณ           ?ฤฤฤConfigSchema
+ณ           ณ   ณ   Exception.php
+ณ           ณ   ณ   Interchange.php
+ณ           ณ   ณ   InterchangeBuilder.php
+ณ           ณ   ณ   schema.ser
+ณ           ณ   ณ   Validator.php
+ณ           ณ   ณ   ValidatorAtom.php
+ณ           ณ   ณ   
+ณ           ณ   ?ฤฤฤBuilder
+ณ           ณ   ณ       ConfigSchema.php
+ณ           ณ   ณ       Xml.php
+ณ           ณ   ณ       
+ณ           ณ   ?ฤฤฤInterchange
+ณ           ณ   ณ       Directive.php
+ณ           ณ   ณ       Id.php
+ณ           ณ   ณ       
+ณ           ณ   ภฤฤฤschema
+ณ           ณ           Attr.AllowedClasses.txt
+ณ           ณ           Attr.AllowedFrameTargets.txt
+ณ           ณ           Attr.AllowedRel.txt
+ณ           ณ           Attr.AllowedRev.txt
+ณ           ณ           Attr.ClassUseCDATA.txt
+ณ           ณ           Attr.DefaultImageAlt.txt
+ณ           ณ           Attr.DefaultInvalidImage.txt
+ณ           ณ           Attr.DefaultInvalidImageAlt.txt
+ณ           ณ           Attr.DefaultTextDir.txt
+ณ           ณ           Attr.EnableID.txt
+ณ           ณ           Attr.ForbiddenClasses.txt
+ณ           ณ           Attr.ID.HTML5.txt
+ณ           ณ           Attr.IDBlacklist.txt
+ณ           ณ           Attr.IDBlacklistRegexp.txt
+ณ           ณ           Attr.IDPrefix.txt
+ณ           ณ           Attr.IDPrefixLocal.txt
+ณ           ณ           AutoFormat.AutoParagraph.txt
+ณ           ณ           AutoFormat.Custom.txt
+ณ           ณ           AutoFormat.DisplayLinkURI.txt
+ณ           ณ           AutoFormat.Linkify.txt
+ณ           ณ           AutoFormat.PurifierLinkify.DocURL.txt
+ณ           ณ           AutoFormat.PurifierLinkify.txt
+ณ           ณ           AutoFormat.RemoveEmpty.Predicate.txt
+ณ           ณ           AutoFormat.RemoveEmpty.RemoveNbsp.Exceptions.txt
+ณ           ณ           AutoFormat.RemoveEmpty.RemoveNbsp.txt
+ณ           ณ           AutoFormat.RemoveEmpty.txt
+ณ           ณ           AutoFormat.RemoveSpansWithoutAttributes.txt
+ณ           ณ           Cache.DefinitionImpl.txt
+ณ           ณ           Cache.SerializerPath.txt
+ณ           ณ           Cache.SerializerPermissions.txt
+ณ           ณ           Core.AggressivelyFixLt.txt
+ณ           ณ           Core.AggressivelyRemoveScript.txt
+ณ           ณ           Core.AllowHostnameUnderscore.txt
+ณ           ณ           Core.AllowParseManyTags.txt
+ณ           ณ           Core.CollectErrors.txt
+ณ           ณ           Core.ColorKeywords.txt
+ณ           ณ           Core.ConvertDocumentToFragment.txt
+ณ           ณ           Core.DirectLexLineNumberSyncInterval.txt
+ณ           ณ           Core.DisableExcludes.txt
+ณ           ณ           Core.EnableIDNA.txt
+ณ           ณ           Core.Encoding.txt
+ณ           ณ           Core.EscapeInvalidChildren.txt
+ณ           ณ           Core.EscapeInvalidTags.txt
+ณ           ณ           Core.EscapeNonASCIICharacters.txt
+ณ           ณ           Core.HiddenElements.txt
+ณ           ณ           Core.Language.txt
+ณ           ณ           Core.LegacyEntityDecoder.txt
+ณ           ณ           Core.LexerImpl.txt
+ณ           ณ           Core.MaintainLineNumbers.txt
+ณ           ณ           Core.NormalizeNewlines.txt
+ณ           ณ           Core.RemoveBlanks.txt
+ณ           ณ           Core.RemoveInvalidImg.txt
+ณ           ณ           Core.RemoveProcessingInstructions.txt
+ณ           ณ           Core.RemoveScriptContents.txt
+ณ           ณ           CSS.AllowDuplicates.txt
+ณ           ณ           CSS.AllowedFonts.txt
+ณ           ณ           CSS.AllowedProperties.txt
+ณ           ณ           CSS.AllowImportant.txt
+ณ           ณ           CSS.AllowTricky.txt
+ณ           ณ           CSS.DefinitionRev.txt
+ณ           ณ           CSS.ForbiddenProperties.txt
+ณ           ณ           CSS.MaxImgLength.txt
+ณ           ณ           CSS.Proprietary.txt
+ณ           ณ           CSS.Trusted.txt
+ณ           ณ           Filter.Custom.txt
+ณ           ณ           Filter.ExtractStyleBlocks.Escaping.txt
+ณ           ณ           Filter.ExtractStyleBlocks.Scope.txt
+ณ           ณ           Filter.ExtractStyleBlocks.TidyImpl.txt
+ณ           ณ           Filter.ExtractStyleBlocks.txt
+ณ           ณ           Filter.YouTube.txt
+ณ           ณ           HTML.Allowed.txt
+ณ           ณ           HTML.AllowedAttributes.txt
+ณ           ณ           HTML.AllowedComments.txt
+ณ           ณ           HTML.AllowedCommentsRegexp.txt
+ณ           ณ           HTML.AllowedElements.txt
+ณ           ณ           HTML.AllowedModules.txt
+ณ           ณ           HTML.Attr.Name.UseCDATA.txt
+ณ           ณ           HTML.BlockWrapper.txt
+ณ           ณ           HTML.CoreModules.txt
+ณ           ณ           HTML.CustomDoctype.txt
+ณ           ณ           HTML.DefinitionID.txt
+ณ           ณ           HTML.DefinitionRev.txt
+ณ           ณ           HTML.Doctype.txt
+ณ           ณ           HTML.FlashAllowFullScreen.txt
+ณ           ณ           HTML.ForbiddenAttributes.txt
+ณ           ณ           HTML.ForbiddenElements.txt
+ณ           ณ           HTML.Forms.txt
+ณ           ณ           HTML.MaxImgLength.txt
+ณ           ณ           HTML.Nofollow.txt
+ณ           ณ           HTML.Parent.txt
+ณ           ณ           HTML.Proprietary.txt
+ณ           ณ           HTML.SafeEmbed.txt
+ณ           ณ           HTML.SafeIframe.txt
+ณ           ณ           HTML.SafeObject.txt
+ณ           ณ           HTML.SafeScripting.txt
+ณ           ณ           HTML.Strict.txt
+ณ           ณ           HTML.TargetBlank.txt
+ณ           ณ           HTML.TargetNoopener.txt
+ณ           ณ           HTML.TargetNoreferrer.txt
+ณ           ณ           HTML.TidyAdd.txt
+ณ           ณ           HTML.TidyLevel.txt
+ณ           ณ           HTML.TidyRemove.txt
+ณ           ณ           HTML.Trusted.txt
+ณ           ณ           HTML.XHTML.txt
+ณ           ณ           info.ini
+ณ           ณ           Output.CommentScriptContents.txt
+ณ           ณ           Output.FixInnerHTML.txt
+ณ           ณ           Output.FlashCompat.txt
+ณ           ณ           Output.Newline.txt
+ณ           ณ           Output.SortAttr.txt
+ณ           ณ           Output.TidyFormat.txt
+ณ           ณ           Test.ForceNoIconv.txt
+ณ           ณ           URI.AllowedSchemes.txt
+ณ           ณ           URI.Base.txt
+ณ           ณ           URI.DefaultScheme.txt
+ณ           ณ           URI.DefinitionID.txt
+ณ           ณ           URI.DefinitionRev.txt
+ณ           ณ           URI.Disable.txt
+ณ           ณ           URI.DisableExternal.txt
+ณ           ณ           URI.DisableExternalResources.txt
+ณ           ณ           URI.DisableResources.txt
+ณ           ณ           URI.Host.txt
+ณ           ณ           URI.HostBlacklist.txt
+ณ           ณ           URI.MakeAbsolute.txt
+ณ           ณ           URI.Munge.txt
+ณ           ณ           URI.MungeResources.txt
+ณ           ณ           URI.MungeSecretKey.txt
+ณ           ณ           URI.OverrideAllowedSchemes.txt
+ณ           ณ           URI.SafeIframeRegexp.txt
+ณ           ณ           
+ณ           ?ฤฤฤDefinitionCache
+ณ           ณ   ณ   Decorator.php
+ณ           ณ   ณ   Null.php
+ณ           ณ   ณ   Serializer.php
+ณ           ณ   ณ   
+ณ           ณ   ?ฤฤฤDecorator
+ณ           ณ   ณ       Cleanup.php
+ณ           ณ   ณ       Memory.php
+ณ           ณ   ณ       Template.php.in
+ณ           ณ   ณ       
+ณ           ณ   ภฤฤฤSerializer
+ณ           ณ       ณ   README
+ณ           ณ       ณ   
+ณ           ณ       ภฤฤฤHTML
+ณ           ณ               4.18.0,3182da474e37bc63b0cef8e502b26445639d3513,1.ser
+ณ           ณ               
+ณ           ?ฤฤฤEntityLookup
+ณ           ณ       entities.ser
+ณ           ณ       
+ณ           ?ฤฤฤFilter
+ณ           ณ       ExtractStyleBlocks.php
+ณ           ณ       YouTube.php
+ณ           ณ       
+ณ           ?ฤฤฤHTMLModule
+ณ           ณ   ณ   Bdo.php
+ณ           ณ   ณ   CommonAttributes.php
+ณ           ณ   ณ   Edit.php
+ณ           ณ   ณ   Forms.php
+ณ           ณ   ณ   Hypertext.php
+ณ           ณ   ณ   Iframe.php
+ณ           ณ   ณ   Image.php
+ณ           ณ   ณ   Legacy.php
+ณ           ณ   ณ   List.php
+ณ           ณ   ณ   Name.php
+ณ           ณ   ณ   Nofollow.php
+ณ           ณ   ณ   NonXMLCommonAttributes.php
+ณ           ณ   ณ   Object.php
+ณ           ณ   ณ   Presentation.php
+ณ           ณ   ณ   Proprietary.php
+ณ           ณ   ณ   Ruby.php
+ณ           ณ   ณ   SafeEmbed.php
+ณ           ณ   ณ   SafeObject.php
+ณ           ณ   ณ   SafeScripting.php
+ณ           ณ   ณ   Scripting.php
+ณ           ณ   ณ   StyleAttribute.php
+ณ           ณ   ณ   Tables.php
+ณ           ณ   ณ   Target.php
+ณ           ณ   ณ   TargetBlank.php
+ณ           ณ   ณ   TargetNoopener.php
+ณ           ณ   ณ   TargetNoreferrer.php
+ณ           ณ   ณ   Text.php
+ณ           ณ   ณ   Tidy.php
+ณ           ณ   ณ   XMLCommonAttributes.php
+ณ           ณ   ณ   
+ณ           ณ   ภฤฤฤTidy
+ณ           ณ           Name.php
+ณ           ณ           Proprietary.php
+ณ           ณ           Strict.php
+ณ           ณ           Transitional.php
+ณ           ณ           XHTML.php
+ณ           ณ           XHTMLAndHTML4.php
+ณ           ณ           
+ณ           ?ฤฤฤInjector
+ณ           ณ       AutoParagraph.php
+ณ           ณ       DisplayLinkURI.php
+ณ           ณ       Linkify.php
+ณ           ณ       PurifierLinkify.php
+ณ           ณ       RemoveEmpty.php
+ณ           ณ       RemoveSpansWithoutAttributes.php
+ณ           ณ       SafeObject.php
+ณ           ณ       
+ณ           ?ฤฤฤLanguage
+ณ           ณ   ภฤฤฤmessages
+ณ           ณ           en.php
+ณ           ณ           
+ณ           ?ฤฤฤLexer
+ณ           ณ       DirectLex.php
+ณ           ณ       DOMLex.php
+ณ           ณ       PH5P.php
+ณ           ณ       
+ณ           ?ฤฤฤNode
+ณ           ณ       Comment.php
+ณ           ณ       Element.php
+ณ           ณ       Text.php
+ณ           ณ       
+ณ           ?ฤฤฤPrinter
+ณ           ณ       ConfigForm.css
+ณ           ณ       ConfigForm.js
+ณ           ณ       ConfigForm.php
+ณ           ณ       CSSDefinition.php
+ณ           ณ       HTMLDefinition.php
+ณ           ณ       
+ณ           ?ฤฤฤStrategy
+ณ           ณ       Composite.php
+ณ           ณ       Core.php
+ณ           ณ       FixNesting.php
+ณ           ณ       MakeWellFormed.php
+ณ           ณ       RemoveForeignElements.php
+ณ           ณ       ValidateAttributes.php
+ณ           ณ       
+ณ           ?ฤฤฤTagTransform
+ณ           ณ       Font.php
+ณ           ณ       Simple.php
+ณ           ณ       
+ณ           ?ฤฤฤToken
+ณ           ณ       Comment.php
+ณ           ณ       Empty.php
+ณ           ณ       End.php
+ณ           ณ       Start.php
+ณ           ณ       Tag.php
+ณ           ณ       Text.php
+ณ           ณ       
+ณ           ?ฤฤฤURIFilter
+ณ           ณ       DisableExternal.php
+ณ           ณ       DisableExternalResources.php
+ณ           ณ       DisableResources.php
+ณ           ณ       HostBlacklist.php
+ณ           ณ       MakeAbsolute.php
+ณ           ณ       Munge.php
+ณ           ณ       SafeIframe.php
+ณ           ณ       
+ณ           ?ฤฤฤURIScheme
+ณ           ณ       data.php
+ณ           ณ       file.php
+ณ           ณ       ftp.php
+ณ           ณ       http.php
+ณ           ณ       https.php
+ณ           ณ       mailto.php
+ณ           ณ       news.php
+ณ           ณ       nntp.php
+ณ           ณ       tel.php
+ณ           ณ       
+ณ           ภฤฤฤVarParser
+ณ                   Flexible.php
+ณ                   Native.php
+ณ                   
+?ฤฤฤimport
+ณ       import_anilist.php
+ณ       import_genres.php
+ณ       update_studio.php
+ณ       update_yt.php
+ณ       
+?ฤฤฤincludes
+ณ       functions.php
+ณ       navbar.php
+ณ       
+?ฤฤฤjs
+ภฤฤฤsql
+        animedule.sql
+        

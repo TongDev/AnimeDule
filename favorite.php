@@ -36,31 +36,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['favorite_id'])) {
     }
 }
 
-// ดึงรายการโปรด พร้อมข้อมูลที่เกี่ยวข้อง (เพิ่ม anime_platforms.url)
+// ดึงรายการโปรด พร้อม platform และ url ดู anime
 $stmt = $pdo->prepare("
     SELECT 
         fa.id AS favorite_id,
         a.id AS anime_id,
         a.title_en,
         a.cover_image,
-        a.next_episode_air_time,
-        st.code AS status,
-        p.name AS platform_name,
-        ap.url AS anime_platform_url,
-        GROUP_CONCAT(s.name SEPARATOR ', ') AS studios
+        st.name_th AS status_name,
+        GROUP_CONCAT(DISTINCT s.name SEPARATOR ', ') AS studio_name
     FROM favorites fa
     JOIN anime a ON fa.anime_id = a.id
     LEFT JOIN statuses st ON a.status_id = st.id
     LEFT JOIN anime_studios ast ON a.id = ast.anime_id
     LEFT JOIN studios s ON ast.studio_id = s.id
-    JOIN platforms p ON fa.platform_id = p.id
-    LEFT JOIN anime_platforms ap ON ap.anime_id = a.id AND ap.platform_id = p.id
     WHERE fa.user_id = ?
     GROUP BY fa.id
     ORDER BY a.title_en ASC
 ");
 $stmt->execute([$user_id]);
 $favorites = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// ดึง URL ดู anime และชื่อ platform แยกสำหรับ favorite ของ user
+$animeIds = array_column($favorites, 'anime_id');
+$platformLinks = [];
+if ($animeIds) {
+    $inQuery = implode(',', array_fill(0, count($animeIds), '?'));
+    $stmtPlatforms = $pdo->prepare("
+        SELECT ap.anime_id, p.name AS platform_name, ap.url
+        FROM anime_platforms ap
+        JOIN platforms p ON ap.platform_id = p.id
+        WHERE ap.anime_id IN ($inQuery)
+    ");
+    $stmtPlatforms->execute($animeIds);
+    while ($row = $stmtPlatforms->fetch(PDO::FETCH_ASSOC)) {
+        $platformLinks[$row['anime_id']][] = [
+            'platform_name' => $row['platform_name'],
+            'url' => $row['url']
+        ];
+    }
+}
 
 // ฟังก์ชันแปลงชื่อ platform เป็น class CSS สีปุ่ม
 function getPlatformClass($platformName) {
@@ -72,7 +87,6 @@ function getPlatformClass($platformName) {
         'Disney+' => 'btn-disney',
         'Crunchyroll' => 'btn-crunchyroll',
         'Hulu' => 'btn-hulu',
-        // เพิ่มแพลตฟอร์มอื่น ๆ ตามต้องการ
     ];
     return $map[$platformName] ?? 'btn-platform-default';
 }
@@ -107,14 +121,12 @@ function getPlatformClass($platformName) {
                     <th>ชื่อ Anime</th>
                     <th>สถานะ</th>
                     <th>สตูดิโอ</th>
-                    <th>ตอนต่อไป</th>
-                    <th>แพลตฟอร์ม</th>
+                    <th>ลิงก์ดู Anime</th>
                     <th>จัดการ</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($favorites as $fav): ?>
-                    <?php $platformClass = getPlatformClass($fav['platform_name']); ?>
                     <tr>
                         <td style="width: 100px;">
                             <img src="<?= htmlspecialchars($fav['cover_image']) ?>" alt="Cover" class="img-fluid" style="max-height: 100px;">
@@ -124,21 +136,20 @@ function getPlatformClass($platformName) {
                                 <?= htmlspecialchars($fav['title_en']) ?>
                             </a>
                         </td>
-                        <td><?= htmlspecialchars($fav['status'] ?? '-') ?></td>
-                        <td><?= htmlspecialchars($fav['studios'] ?? '-') ?></td>
+                        <td><?= htmlspecialchars($fav['status_name'] ?? '-') ?></td>
+                        <td><?= htmlspecialchars($fav['studio_name'] ?? '-') ?></td>
                         <td>
-                            <?= $fav['next_episode_air_time'] ? date('d M Y H:i', strtotime($fav['next_episode_air_time'])) : 'ไม่ระบุ' ?>
-                        </td>
-                        <td>
-                            <?php if (!empty($fav['anime_platform_url'])): ?>
-                                <a href="<?= htmlspecialchars($fav['anime_platform_url']) ?>" class="btn btn-sm <?= $platformClass ?>" target="_blank" rel="noopener noreferrer">
-                                    <i class="bi bi-play-btn-fill me-1"></i>
-                                    <?= htmlspecialchars($fav['platform_name']) ?>
-                                </a>
+                            <?php if (!empty($platformLinks[$fav['anime_id']])): ?>
+                                <?php foreach ($platformLinks[$fav['anime_id']] as $link): ?>
+                                    <?php $btnClass = getPlatformClass($link['platform_name']); ?>
+                                    <a href="<?= htmlspecialchars($link['url']) ?>" 
+                                       class="btn btn-sm <?= $btnClass ?> mb-1" 
+                                       target="_blank" rel="noopener noreferrer">
+                                        <?= htmlspecialchars($link['platform_name']) ?>
+                                    </a>
+                                <?php endforeach; ?>
                             <?php else: ?>
-                                <span class="btn btn-sm btn-secondary disabled" tabindex="-1" aria-disabled="true">
-                                    ไม่มีลิงก์
-                                </span>
+                                <span class="text-muted">ไม่มีลิงก์</span>
                             <?php endif; ?>
                         </td>
                         <td>

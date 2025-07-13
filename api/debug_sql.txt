@@ -1,0 +1,29 @@
+
+    SELECT DISTINCT a.id,
+           COALESCE(a.title_en, a.title_romaji, a.title_native) AS title,
+           a.cover_image,
+           a.total_episodes,
+           s.season,
+           s.year,
+           GROUP_CONCAT(DISTINCT stu.name SEPARATOR ', ') AS studios,
+           CASE WHEN f.id IS NULL THEN 0 ELSE 1 END AS favorite
+    FROM anime a
+    JOIN seasons s ON a.season_id = s.id
+    LEFT JOIN statuses st ON a.status_id = st.id
+    LEFT JOIN anime_studios ast ON a.id = ast.anime_id
+    LEFT JOIN studios stu ON ast.studio_id = stu.id
+    
+    LEFT JOIN favorites f ON f.anime_id = a.id AND f.user_id = ?
+    WHERE s.year = ? AND s.season = ?
+    GROUP BY a.id
+    ORDER BY s.year DESC,
+             FIELD(s.season, 'Winter', 'Spring', 'Summer', 'Fall') DESC,
+             a.created_at DESC
+    LIMIT 20 OFFSET 0
+
+Params: Array
+(
+    [0] => 2025
+    [1] => Summer
+    [2] => 1
+)

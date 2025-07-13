@@ -186,3 +186,59 @@ footer {
     margin-bottom: 4px;
     user-select: none;
 }
+#searchResults {
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1050;
+}
+
+.filter-section {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 10px;
+    background: #fff;
+}
+
+.filter-label {
+    font-weight: 600;
+    margin-top: 1rem;
+}
+
+#loadingSpinner {
+    display: none;
+    text-align: center;
+    padding: 30px 0;
+}
+.platform-btn {
+  min-width: 90px;         /* ความกว้างขั้นต่ำ ให้พอดีกับข้อความ */
+  max-width: 140px;        /* จำกัดความกว้างสูงสุด */
+  white-space: nowrap;     /* ห้ามขึ้นบรรทัดใหม่ */
+  overflow: hidden;
+  text-overflow: ellipsis; /* ตัดข้อความถ้ายาวเกิน */
+  margin-right: 4px;       /* ช่องว่างขวาระหว่างปุ่ม */
+  margin-bottom: 4px;      /* ช่องว่างล่าง เผื่อหลายแถว */
+  display: inline-block;
+}
+.btn-netflix {
+    background-color: #000000;  /* สีดำ */
+    color: #e50914;             /* สีแดง Netflix */
+    border: 1px solid #e50914;
+}
+
+.btn-netflix:hover {
+    background-color: #1a1a1a;  /* ดำเข้มขึ้นเล็กน้อยเมื่อ hover */
+    color: #ff2f3f;
+    border-color: #ff2f3f;
+}
+.btn-bilibili    { background-color: #00a1d6; color: #fff; }
+.btn-youtube     { background-color: #ff0000; color: #fff; }
+.btn-amazon      { background-color: #232f3e; color: #fff; }
+.btn-disney      { background-color: #113ccf; color: #fff; }
+.btn-crunchyroll { background-color: #f47521; color: #fff; }
+.btn-hulu        { background-color: #1ce783; color: #000; }
+
+.btn-platform-default {
+    background-color: #6c757d;
+    color: #fff;
+}
