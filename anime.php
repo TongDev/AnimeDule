@@ -2,9 +2,12 @@
 session_start();
 require 'config/database.php';
 
+// โหลด HTMLPurifier (แก้ path ตามที่คุณวางไฟล์จริง)
+require_once __DIR__ . '/htmlpurifier/library/HTMLPurifier.auto.php';
+
 $user_id = $_SESSION['user'] ?? null;
 
-// ✅ เตรียม $user เพื่อให้ navbar.php ใช้งานได้
+// เตรียม $user เพื่อให้ navbar ใช้งานได้
 $user = null;
 if ($user_id) {
     $stmt_user = $pdo->prepare("SELECT id, name FROM users WHERE id = ?");
@@ -12,21 +15,13 @@ if ($user_id) {
     $user = $stmt_user->fetch(PDO::FETCH_ASSOC);
 }
 
-// ตรวจสอบ id
+// ตรวจสอบ id ว่ามีไหม และเป็นเลขหรือไม่
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     die("ไม่พบ Anime ที่คุณต้องการดู");
 }
 $anime_id = (int)$_GET['id'];
 
-// ดึง Favorite ของ user
-$user_favorites = [];
-if ($user_id) {
-    $fav_stmt = $pdo->prepare("SELECT platform_id FROM favorites WHERE user_id = ? AND anime_id = ?");
-    $fav_stmt->execute([$user_id, $anime_id]);
-    $user_favorites = $fav_stmt->fetchAll(PDO::FETCH_COLUMN);
-}
-
-// ดึงข้อมูล Anime พร้อมข้อมูลจากตารางอื่น
+// ดึงข้อมูล Anime พร้อม join ตาราง seasons, sources, statuses, studios
 $stmt = $pdo->prepare("
     SELECT 
         a.*, 
@@ -49,18 +44,21 @@ if (!$anime) {
     die("ไม่พบ Anime นี้ในระบบ");
 }
 
-// ดึงแนว
+// ดึงแนว (genres) รวมเป็น string เดียว
 $genre_stmt = $pdo->prepare("
-    SELECT g.name FROM anime_genres ag
+    SELECT GROUP_CONCAT(g.name ORDER BY g.name SEPARATOR ', ') AS genre_list
+    FROM anime_genres ag
     JOIN genres g ON ag.genre_id = g.id
     WHERE ag.anime_id = ?
+    GROUP BY ag.anime_id
 ");
 $genre_stmt->execute([$anime_id]);
-$genres = $genre_stmt->fetchAll(PDO::FETCH_COLUMN);
+$row = $genre_stmt->fetch(PDO::FETCH_ASSOC);
+$genres = $row ? $row['genre_list'] : '-';
 
-// ดึงแพลตฟอร์ม
+// ดึงแพลตฟอร์มที่มีการฉาย
 $platform_stmt = $pdo->prepare("
-    SELECT p.id, p.name, ap.episode_time, ap.watch_url
+    SELECT p.id, p.name, ap.episode_time, ap.url
     FROM anime_platforms ap
     JOIN platforms p ON ap.platform_id = p.id
     WHERE ap.anime_id = ?
@@ -73,7 +71,7 @@ $avg_stmt = $pdo->prepare("SELECT AVG(rating) AS avg_rating, COUNT(*) AS review_
 $avg_stmt->execute([$anime_id]);
 $avg_data = $avg_stmt->fetch();
 
-// ดึงรีวิว
+// ดึงรีวิวทั้งหมด
 $reviews_stmt = $pdo->prepare("
     SELECT r.rating, r.review_text, r.created_at, u.email 
     FROM reviews r
@@ -83,11 +81,17 @@ $reviews_stmt = $pdo->prepare("
 ");
 $reviews_stmt->execute([$anime_id]);
 $reviews = $reviews_stmt->fetchAll(PDO::FETCH_ASSOC);
-?>
 
+// กำหนด config ของ HTMLPurifier ให้ไม่อนุญาตแท็ก HTML ใด ๆ
+$config = HTMLPurifier_Config::createDefault();
+$config->set('HTML.Allowed', '');  // ลบทุกแท็ก HTML
+$purifier = new HTMLPurifier($config);
+
+// ทำความสะอาด synopsis
+$cleanSynopsis = $purifier->purify($anime['synopsis'] ?? '');
+?>
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
     <meta charset="UTF-8" />
     <title><?= htmlspecialchars($anime['title_en']) ?> - AnimeDule</title>
@@ -95,14 +99,12 @@ $reviews = $reviews_stmt->fetchAll(PDO::FETCH_ASSOC);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
     <link rel="stylesheet" href="assets/css/style.css" />
 </head>
-
 <body class="bg-light">
 
 <?php include 'includes/navbar.php'; ?>
 
 <div class="container py-4">
 
-    <!-- ✅ Flash Message -->
     <?php if (!empty($_SESSION['flash'])): ?>
         <div class="alert alert-info alert-dismissible fade show" role="alert">
             <?= htmlspecialchars($_SESSION['flash']) ?>
@@ -117,9 +119,8 @@ $reviews = $reviews_stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
         <div class="col-md-8">
             <h2><?= htmlspecialchars($anime['title_en']) ?></h2>
-            <!-- ลบชื่ออื่น (title_alt) ออกตามคำขอ -->
 
-            <p><strong>แนว:</strong> <?= $genres ? implode(", ", $genres) : "-" ?></p>
+            <p><strong>แนว:</strong> <?= htmlspecialchars($genres) ?></p>
             <p><strong>ต้นฉบับจาก:</strong> <?= htmlspecialchars($anime['source'] ?? '-') ?></p>
             <p><strong>ผลิตโดย:</strong> <?= htmlspecialchars($anime['studio'] ?? '-') ?></p>
             <p><strong>จำนวนตอน:</strong> <?= htmlspecialchars($anime['total_episodes'] ?? '-') ?></p>
@@ -128,7 +129,7 @@ $reviews = $reviews_stmt->fetchAll(PDO::FETCH_ASSOC);
 
             <hr>
             <h5>เรื่องย่อ:</h5>
-            <p><?= nl2br(htmlspecialchars($anime['synopsis'] ?? '-')) ?></p>
+            <p><?= nl2br(htmlspecialchars($cleanSynopsis)) ?></p>
 
             <hr>
             <h5>รับชมบนแพลตฟอร์ม:</h5>
@@ -137,7 +138,7 @@ $reviews = $reviews_stmt->fetchAll(PDO::FETCH_ASSOC);
                     <?php foreach ($platforms as $p): ?>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <?= htmlspecialchars($p['name']) ?> - ฉายเวลา <?= substr($p['episode_time'], 0, 5) ?>
-                            <a href="<?= htmlspecialchars($p['watch_url']) ?>" target="_blank" class="btn btn-sm btn-outline-success">ดูบน <?= htmlspecialchars($p['name']) ?></a>
+                            <a href="<?= htmlspecialchars($p['url']) ?>" target="_blank" class="btn btn-sm btn-outline-success">ดูบน <?= htmlspecialchars($p['name']) ?></a>
                         </li>
                     <?php endforeach; ?>
                 </ul>
@@ -145,6 +146,7 @@ $reviews = $reviews_stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div class="alert alert-warning mt-2">ยังไม่มีข้อมูลการฉายบนแพลตฟอร์ม</div>
             <?php endif; ?>
 
+            <!-- ส่วนเพิ่ม Favorite และรีวิว (เหมือนเดิม) -->
             <?php if ($user_id): ?>
                 <hr>
                 <h5>เพิ่มใน Favorite</h5>
@@ -155,15 +157,13 @@ $reviews = $reviews_stmt->fetchAll(PDO::FETCH_ASSOC);
                         <select name="platform_id" id="platform" class="form-select" required>
                             <option value="">-- เลือกแพลตฟอร์ม --</option>
                             <?php foreach ($platforms as $p): ?>
-                                <option value="<?= $p['id'] ?>" <?= in_array($p['id'], $user_favorites) ? 'selected disabled' : '' ?>>
+                                <option value="<?= $p['id'] ?>">
                                     <?= htmlspecialchars($p['name']) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary" <?= count($user_favorites) === count($platforms) ? 'disabled' : '' ?>>
-                        <?= count($user_favorites) === count($platforms) ? 'เพิ่มแล้ว' : 'เพิ่ม Favorite' ?>
-                    </button>
+                    <button type="submit" class="btn btn-primary">เพิ่ม Favorite</button>
                 </form>
 
                 <hr>

@@ -38,3 +38,151 @@ footer {
     font-size: 1.5rem;
     cursor: pointer;
 }
+
+/* สีปุ่มตามแพลตฟอร์ม */
+.btn-platform-netflix {
+    background-color: #e50914;
+    color: white;
+    border: none;
+}
+
+.btn-platform-netflix:hover {
+    background-color: #b20710;
+    color: white;
+}
+
+.btn-platform-bilibili {
+    background-color: #00a1d6;
+    color: white;
+    border: none;
+}
+
+.btn-platform-bilibili:hover {
+    background-color: #008bb5;
+    color: white;
+}
+
+.btn-platform-youtube {
+    background-color: #ff0000;
+    color: white;
+    border: none;
+}
+
+.btn-platform-youtube:hover {
+    background-color: #cc0000;
+    color: white;
+}
+
+.btn-platform-default {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+}
+
+.btn-platform-default:hover {
+    background-color: #5a6268;
+    color: white;
+    border: none;
+}
+
+/* ปุ่มแพลตฟอร์มสวย ๆ พร้อมกรอบ */
+.btn-netflix {
+    background-color: #e50914;
+    color: white;
+    border: 2px solid transparent;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+.btn-netflix:hover, .btn-netflix:focus {
+    background-color: #b00710;
+    color: white;
+    border-color: #b00710;
+}
+
+.btn-bilibili {
+    background-color: #00a1d6;
+    color: white;
+    border: 2px solid transparent;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+.btn-bilibili:hover, .btn-bilibili:focus {
+    background-color: #007da6;
+    color: white;
+    border-color: #007da6;
+}
+
+.btn-youtube {
+    background-color: #ff0000;
+    color: white;
+    border: 2px solid transparent;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+.btn-youtube:hover, .btn-youtube:focus {
+    background-color: #cc0000;
+    color: white;
+    border-color: #cc0000;
+}
+
+.btn-amazon {
+    background-color: #ff9900;
+    color: black;
+    border: 2px solid transparent;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+.btn-amazon:hover, .btn-amazon:focus {
+    background-color: #cc7a00;
+    color: black;
+    border-color: #cc7a00;
+}
+
+.btn-disney {
+    background-color: #113ccf;
+    color: white;
+    border: 2px solid transparent;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+.btn-disney:hover, .btn-disney:focus {
+    background-color: #0a2494;
+    color: white;
+    border-color: #0a2494;
+}
+
+.btn-crunchyroll {
+    background-color: #f47a20;
+    color: white;
+    border: 2px solid transparent;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+.btn-crunchyroll:hover, .btn-crunchyroll:focus {
+    background-color: #c36017;
+    color: white;
+    border-color: #c36017;
+}
+
+.btn-hulu {
+    background-color: #1ce783;
+    color: black;
+    border: 2px solid transparent;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+.btn-hulu:hover, .btn-hulu:focus {
+    background-color: #14b560;
+    color: black;
+    border-color: #14b560;
+}
+
+.btn-platform-default {
+    background-color: #6c757d;
+    color: white;
+    border: 2px solid transparent;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+.btn-platform-default:hover, .btn-platform-default:focus {
+    background-color: #5a6268;
+    color: white;
+    border-color: #5a6268;
+}
+.btn-group .btn {
+    margin-right: 4px;
+    margin-bottom: 4px;
+    user-select: none;
+}

@@ -1,226 +1,266 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
 
-function fetchSeasonAnimes($season, $year, $pdo) {
-    echo "Importing $season $year...\n";
+define('YOUTUBE_API_KEY', 'AIzaSyBUDgHyeLyBLq4a9fNO3GiBgzET3ZUakn0');
+define('GOOGLE_API_KEY', 'AIzaSyDZfbE8FmPZK2uUK_4NpCTZ_PP5AuWV_V0');
+define('GOOGLE_CSE_ID', 'f2a8fb7b0309c49c2');
 
-    $query = '
-    query ($season: MediaSeason, $seasonYear: Int) {
-      Page(page: 1, perPage: 50) {
-        media(season: $season, seasonYear: $seasonYear, type: ANIME) {
-          id
-          title {
-            english
-            romaji
-            native
-          }
-          coverImage {
-            large
-          }
-          format
-          status
-          episodes
-          source
-          season
-          seasonYear
-          description(asHtml: false)
-          studios {
-            nodes {
-              name
-            }
-          }
-          genres
-        }
-      }
-    }';
-
-    $variables = [
-        'season' => strtoupper($season),
-        'seasonYear' => (int)$year,
+function getYoutubePlaylistLink($title) {
+    $channelIds = [
+        'Ani-One Thailand' => 'UC0VOyT2OCBKdQhGM3h5j3pA',
+        'Muse Thailand' => 'UCgdwtyqBunlRb-i-7PnCssQ'
     ];
+    $keywordWhitelist = ['ep', 'episode', 'ตอนที่', 'เต็มเรื่อง', 'watch'];
 
-    $data = apiRequest($query, $variables);
-    if (!$data || !isset($data['Page']['media'])) {
-        echo "Failed to fetch data for $season $year\n";
-        return;
+    foreach ($channelIds as $channelName => $channelId) {
+        $url = "https://www.googleapis.com/youtube/v3/search?" . http_build_query([
+            'part' => 'snippet',
+            'channelId' => $channelId,
+            'q' => $title,
+            'type' => 'playlist',
+            'maxResults' => 5,
+            'key' => YOUTUBE_API_KEY,
+        ]);
+
+        $response = @file_get_contents($url);
+        if (!$response) continue;
+
+        $data = json_decode($response, true);
+        if (!empty($data['items'])) {
+            foreach ($data['items'] as $item) {
+                $playlistId = $item['id']['playlistId'] ?? null;
+                $playlistTitle = strtolower($item['snippet']['title'] ?? '');
+
+                foreach ($keywordWhitelist as $keyword) {
+                    if (strpos($playlistTitle, $keyword) !== false) {
+                        return [
+                            'platform' => 'YouTube',
+                            'url' => "https://www.youtube.com/playlist?list={$playlistId}",
+                            'source' => $channelName
+                        ];
+                    }
+                }
+            }
+        }
+    }
+    return null;
+}
+
+function getStreamingLinkFromGoogleCSE($title) {
+    $searchQuery = urlencode($title . ' anime watch site');
+    $url = "https://www.googleapis.com/customsearch/v1?q={$searchQuery}&key=" . GOOGLE_API_KEY . "&cx=" . GOOGLE_CSE_ID . "&num=3";
+
+    $response = json_decode(file_get_contents($url), true);
+    if (!empty($response['items'])) {
+        foreach ($response['items'] as $item) {
+            $link = $item['link'];
+            if (strpos($link, 'netflix.com') !== false) {
+                return ['platform' => 'Netflix', 'url' => $link, 'source' => 'cse'];
+            } elseif (strpos($link, 'bilibili.tv') !== false) {
+                return ['platform' => 'Bilibili', 'url' => $link, 'source' => 'cse'];
+            }
+        }
+    }
+    return null;
+}
+
+function savePlatformLink($pdo, $animeId, $linkData) {
+    $stmtPlatform = $pdo->prepare("SELECT id FROM platforms WHERE name = ?");
+    $stmtPlatform->execute([$linkData['platform']]);
+    $platformId = $stmtPlatform->fetchColumn();
+
+    if (!$platformId) {
+        $stmtInsertPlatform = $pdo->prepare("INSERT INTO platforms (name) VALUES (?)");
+        $stmtInsertPlatform->execute([$linkData['platform']]);
+        $platformId = $pdo->lastInsertId();
     }
 
-    foreach ($data['Page']['media'] as $anime) {
-        $anilist_id = $anime['id'];
+    $stmtCheck = $pdo->prepare("SELECT id FROM anime_platforms WHERE anime_id = ? AND platform_id = ? AND url = ?");
+    $stmtCheck->execute([$animeId, $platformId, $linkData['url']]);
+    $exists = $stmtCheck->fetchColumn();
 
-        // ✅ ข้ามถ้ามี genre เป็น Ecchi หรือ Hentai
-        $genres = $anime['genres'] ?? [];
-        if (in_array("Ecchi", $genres) || in_array("Hentai", $genres)) {
-            echo "ข้าม anime ID $anilist_id เพราะมี genre เป็น Ecchi หรือ Hentai\n";
-            continue;
-        }
-
-        // ✅ ดึงชื่อ 3 ภาษา
-        $title_en = $anime['title']['english'] ?? null;
-        $title_romaji = $anime['title']['romaji'] ?? null;
-        $title_native = $anime['title']['native'] ?? null;
-
-        // ✅ อย่างน้อยต้องมีชื่อสักภาษา
-        if (!$title_en && !$title_romaji && !$title_native) {
-            echo "ข้าม anime ID $anilist_id เพราะไม่มีชื่อเลย\n";
-            continue;
-        }
-
-        // ✅ ข้อมูลอื่น ๆ
-        $cover_image = $anime['coverImage']['large'] ?? null;
-        $format = $anime['format'] ?? null;
-        $status = strtolower($anime['status'] ?? '');
-        $episodes = $anime['episodes'] ?? null;
-        $source = $anime['source'] ?? null;
-        $season_name = $anime['season'] ?? null;
-        $season_year = $anime['seasonYear'] ?? null;
-        $synopsis = strip_tags($anime['description'] ?? '');
-        $studio_name = $anime['studios']['nodes'][0]['name'] ?? null;
-
-        // ✅ Season ID
-        $season_id = null;
-        if ($season_name && $season_year) {
-            $stmt = $pdo->prepare("SELECT id FROM seasons WHERE season = ? AND year = ?");
-            $stmt->execute([$season_name, $season_year]);
-            $season_id = $stmt->fetchColumn();
-            if (!$season_id) {
-                $stmt = $pdo->prepare("INSERT INTO seasons (season, year) VALUES (?, ?)");
-                $stmt->execute([$season_name, $season_year]);
-                $season_id = $pdo->lastInsertId();
-            }
-        }
-
-        // ✅ Source ID
-        $source_id = null;
-        if ($source) {
-            $stmt = $pdo->prepare("SELECT id FROM sources WHERE code = ?");
-            $stmt->execute([$source]);
-            $source_id = $stmt->fetchColumn();
-            if (!$source_id) {
-                $stmt = $pdo->prepare("INSERT INTO sources (code) VALUES (?)");
-                $stmt->execute([$source]);
-                $source_id = $pdo->lastInsertId();
-            }
-        }
-
-        // ✅ Status ID
-        $status_id = null;
-        if ($status) {
-            $stmt = $pdo->prepare("SELECT id FROM statuses WHERE code = ?");
-            $stmt->execute([$status]);
-            $status_id = $stmt->fetchColumn();
-            if (!$status_id) {
-                $stmt = $pdo->prepare("INSERT INTO statuses (code) VALUES (?)");
-                $stmt->execute([$status]);
-                $status_id = $pdo->lastInsertId();
-            }
-        }
-
-        // ✅ Studio ID
-        $studio_id = null;
-        if ($studio_name) {
-            $stmt = $pdo->prepare("SELECT id FROM studios WHERE name = ?");
-            $stmt->execute([$studio_name]);
-            $studio_id = $stmt->fetchColumn();
-            if (!$studio_id) {
-                $stmt = $pdo->prepare("INSERT INTO studios (name) VALUES (?)");
-                $stmt->execute([$studio_name]);
-                $studio_id = $pdo->lastInsertId();
-            }
-        }
-
-        // ✅ ตรวจสอบว่ามี anime นี้อยู่หรือยัง
-        $stmtCheck = $pdo->prepare("SELECT id FROM anime WHERE anilist_id = ?");
-        $stmtCheck->execute([$anilist_id]);
-        $exists = $stmtCheck->fetchColumn();
-
-        if ($exists) {
-            // ✅ อัปเดต
-            $stmt = $pdo->prepare("
-                UPDATE anime SET
-                    title_en = ?, title_romaji = ?, title_native = ?,
-                    cover_image = ?, format = ?, status_id = ?, total_episodes = ?,
-                    source_id = ?, season_id = ?, synopsis = ?, studio_id = ?
-                WHERE anilist_id = ?
-            ");
-            $stmt->execute([
-                $title_en, $title_romaji, $title_native,
-                $cover_image, $format, $status_id, $episodes,
-                $source_id, $season_id, $synopsis, $studio_id,
-                $anilist_id
-            ]);
-        } else {
-            // ✅ เพิ่มใหม่
-            $stmt = $pdo->prepare("
-                INSERT INTO anime (
-                    anilist_id, title_en, title_romaji, title_native,
-                    cover_image, format, status_id, total_episodes,
-                    source_id, season_id, synopsis, studio_id
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ");
-            $stmt->execute([
-                $anilist_id, $title_en, $title_romaji, $title_native,
-                $cover_image, $format, $status_id, $episodes,
-                $source_id, $season_id, $synopsis, $studio_id
-            ]);
-        }
-
-        // ✅ ลบ genre เก่าก่อนเพิ่มใหม่
-        $stmt = $pdo->prepare("DELETE FROM anime_genres WHERE anime_id = (SELECT id FROM anime WHERE anilist_id = ?)");
-        $stmt->execute([$anilist_id]);
-
-        // ✅ ใส่ genre ใหม่
-        foreach ($genres as $genreName) {
-            $stmt = $pdo->prepare("SELECT id FROM genres WHERE name = ?");
-            $stmt->execute([$genreName]);
-            $genre_id = $stmt->fetchColumn();
-
-            if (!$genre_id) {
-                $stmt = $pdo->prepare("INSERT INTO genres (name) VALUES (?)");
-                $stmt->execute([$genreName]);
-                $genre_id = $pdo->lastInsertId();
-            }
-
-            $stmtAnimeId = $pdo->prepare("SELECT id FROM anime WHERE anilist_id = ?");
-            $stmtAnimeId->execute([$anilist_id]);
-            $anime_db_id = $stmtAnimeId->fetchColumn();
-
-            $stmt = $pdo->prepare("INSERT INTO anime_genres (anime_id, genre_id) VALUES (?, ?)");
-            $stmt->execute([$anime_db_id, $genre_id]);
-        }
-
-        echo "✔ Imported anime ID $anilist_id: " . ($title_en ?? $title_romaji ?? $title_native) . "\n";
+    if (!$exists) {
+        $stmtInsertAnimePlatform = $pdo->prepare("
+            INSERT INTO anime_platforms (anime_id, platform_id, url, source)
+            VALUES (?, ?, ?, ?)
+        ");
+        $stmtInsertAnimePlatform->execute([$animeId, $platformId, $linkData['url'], $linkData['source']]);
     }
 }
 
-function apiRequest($query, $variables = []) {
-    $url = 'https://graphql.anilist.co';
-    $options = [
-        'http' => [
-            'header'  => "Content-Type: application/json\r\n",
-            'method'  => 'POST',
-            'content' => json_encode(['query' => $query, 'variables' => $variables]),
-            'timeout' => 20
-        ]
-    ];
-    $context  = stream_context_create($options);
-    $result = file_get_contents($url, false, $context);
-    if ($result === FALSE) {
-        return null;
-    }
-    $json = json_decode($result, true);
-    return $json['data'] ?? null;
-}
-
-// เรียกใช้
-$seasons = ['WINTER', 'SPRING', 'SUMMER', 'FALL'];
+$seasons = ['Winter', 'Spring', 'Summer', 'Fall'];
 $years = [2023, 2024, 2025];
 
 foreach ($years as $year) {
     foreach ($seasons as $season) {
-        fetchSeasonAnimes($season, $year, $pdo);
+        $page = 1;
+        $perPage = 50;
+
+        $query = '
+        query ($season: MediaSeason, $seasonYear: Int, $page: Int, $perPage: Int) {
+            Page(page: $page, perPage: $perPage) {
+                media(season: $season, seasonYear: $seasonYear, type: ANIME, isAdult: false) {
+                    id
+                    title {
+                        romaji
+                        english
+                        native
+                    }
+                    episodes
+                    startDate {
+                        year
+                        month
+                        day
+                    }
+                    studios {
+                        nodes {
+                            name
+                        }
+                    }
+                    source
+                    status
+                    nextAiringEpisode {
+                        airingAt
+                    }
+                    genres
+                    format
+                    description
+                    coverImage {
+                        large
+                    }
+                }
+            }
+        }';
+
+        $variables = [
+            'season' => strtoupper($season),
+            'seasonYear' => $year,
+            'page' => $page,
+            'perPage' => $perPage
+        ];
+
+        $headers = ['Content-Type: application/json'];
+        $opts = [
+            'http' => [
+                'method' => 'POST',
+                'header' => implode("\r\n", $headers),
+                'content' => json_encode(['query' => $query, 'variables' => $variables])
+            ]
+        ];
+        $context = stream_context_create($opts);
+        $result = json_decode(file_get_contents('https://graphql.anilist.co', false, $context), true);
+
+        if (isset($result['data']['Page']['media'])) {
+            $animeList = array_slice($result['data']['Page']['media'], 0, 5);
+
+            foreach ($animeList as $anime) {
+                if (in_array('Ecchi', $anime['genres']) || in_array('Hentai', $anime['genres'])) {
+                    continue;
+                }
+
+                $title_en = $anime['title']['english'] ?? $anime['title']['romaji'] ?? $anime['title']['native'] ?? 'Unknown Title';
+                $title_native = $anime['title']['native'] ?? null;
+                $title_romaji = $anime['title']['romaji'] ?? null;
+                $cover_image = $anime['coverImage']['large'] ?? null;
+                $episodes = $anime['episodes'] ?? null;
+                $nextAirTime = isset($anime['nextAiringEpisode']['airingAt']) ? date('Y-m-d H:i:s', $anime['nextAiringEpisode']['airingAt']) : null;
+                $format = $anime['format'] ?? null;
+                $synopsis = $anime['description'] ?? null;
+
+                $studioNodes = $anime['studios']['nodes'] ?? [];
+                $studioIds = [];
+
+                foreach ($studioNodes as $studio) {
+                    $studioName = trim($studio['name']);
+                    if ($studioName === '') continue;
+
+                    $stmt = $pdo->prepare("SELECT id FROM studios WHERE name = ?");
+                    $stmt->execute([$studioName]);
+                    $studioId = $stmt->fetchColumn();
+
+                    if (!$studioId) {
+                        $stmtInsert = $pdo->prepare("INSERT INTO studios (name) VALUES (?)");
+                        $stmtInsert->execute([$studioName]);
+                        $studioId = $pdo->lastInsertId();
+                    }
+
+                    $studioIds[] = $studioId;
+                }
+
+                $statusName = $anime['status'] ?? 'UNKNOWN';
+                $stmtStatus = $pdo->prepare("SELECT id FROM statuses WHERE code = ?");
+                $stmtStatus->execute([$statusName]);
+                $statusId = $stmtStatus->fetchColumn();
+                if (!$statusId) {
+                    $stmtInsertStatus = $pdo->prepare("INSERT INTO statuses (code, name_th) VALUES (?, ?)");
+                    $stmtInsertStatus->execute([$statusName, null]);
+                    $statusId = $pdo->lastInsertId();
+                }
+
+                $sourceName = $anime['source'] ?? 'UNKNOWN';
+                $stmtSource = $pdo->prepare("SELECT id FROM sources WHERE code = ?");
+                $stmtSource->execute([$sourceName]);
+                $sourceId = $stmtSource->fetchColumn();
+                if (!$sourceId) {
+                    $stmtInsertSource = $pdo->prepare("INSERT INTO sources (code, name_th) VALUES (?, ?)");
+                    $stmtInsertSource->execute([$sourceName, null]);
+                    $sourceId = $pdo->lastInsertId();
+                }
+
+                $stmtSeason = $pdo->prepare("SELECT id FROM seasons WHERE season = ? AND year = ?");
+                $stmtSeason->execute([$season, $year]);
+                $seasonId = $stmtSeason->fetchColumn();
+                if (!$seasonId) {
+                    $stmtInsertSeason = $pdo->prepare("INSERT INTO seasons (season, year) VALUES (?, ?)");
+                    $stmtInsertSeason->execute([$season, $year]);
+                    $seasonId = $pdo->lastInsertId();
+                }
+
+                $stmtCheckAnime = $pdo->prepare("SELECT id FROM anime WHERE anilist_id = ?");
+                $stmtCheckAnime->execute([$anime['id']]);
+                $existingAnimeId = $stmtCheckAnime->fetchColumn();
+
+                if ($existingAnimeId) {
+                    $animeId = $existingAnimeId;
+                } else {
+                    $stmtInsertAnime = $pdo->prepare("
+                        INSERT INTO anime (anilist_id, title_en, title_native, title_romaji, cover_image, total_episodes, season_id, next_episode_air_time, source_id, status_id, synopsis, format)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ");
+                    $stmtInsertAnime->execute([
+                        $anime['id'],
+                        $title_en,
+                        $title_native,
+                        $title_romaji,
+                        $cover_image,
+                        $episodes,
+                        $seasonId,
+                        $nextAirTime,
+                        $sourceId,
+                        $statusId,
+                        $synopsis,
+                        $format
+                    ]);
+                    $animeId = $pdo->lastInsertId();
+                }
+
+                // เชื่อมโยง anime กับทุก studio
+                foreach ($studioIds as $studioId) {
+                    $stmtLink = $pdo->prepare("INSERT IGNORE INTO anime_studios (anime_id, studio_id) VALUES (?, ?)");
+                    $stmtLink->execute([$animeId, $studioId]);
+                }
+
+                $linkData = getYoutubePlaylistLink($title_en);
+                if (!$linkData) {
+                    $linkData = getStreamingLinkFromGoogleCSE($title_en);
+                }
+
+                if ($linkData) {
+                    savePlatformLink($pdo, $animeId, $linkData);
+                }
+            }
+        }
     }
 }
 
-echo "🎉 Import สำเร็จเรียบร้อย\n";
+echo "Import completed.\n";

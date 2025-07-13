@@ -1,44 +1,36 @@
 <?php
 session_start();
-header('Content-Type: application/json');
 require '../config/database.php';
 
+header('Content-Type: application/json; charset=utf-8');
+
 if (!isset($_SESSION['user'])) {
-    echo json_encode(['error' => 'กรุณาเข้าสู่ระบบ']);
+    echo json_encode(['error' => 'ต้องเข้าสู่ระบบก่อน']);
     exit;
 }
 
-$user_id = $_SESSION['user'];
-$data = json_decode(file_get_contents("php://input"), true);
-$anime_id = (int)($data['anime_id'] ?? 0);
+$input = json_decode(file_get_contents('php://input'), true);
+$anime_id = isset($input['anime_id']) ? (int)$input['anime_id'] : 0;
+$user_id = (int)$_SESSION['user'];
 
-if (!$anime_id) {
-    echo json_encode(['error' => 'Anime ไม่ถูกต้อง']);
+if ($anime_id <= 0) {
+    echo json_encode(['error' => 'ข้อมูลอนิเมะไม่ถูกต้อง']);
     exit;
 }
 
-// หาว่าเคย favorite ไปยัง
-$stmt = $pdo->prepare("SELECT id FROM favorites WHERE user_id = ? AND anime_id = ?");
-$stmt->execute([$user_id, $anime_id]);
-$fav = $stmt->fetch();
+// ตรวจสอบว่าอนิเมะนี้อยู่ใน favorites แล้วหรือยัง
+$stmtCheck = $pdo->prepare("SELECT id FROM favorites WHERE user_id = ? AND anime_id = ?");
+$stmtCheck->execute([$user_id, $anime_id]);
+$exists = $stmtCheck->fetchColumn();
 
-if ($fav) {
-    // ลบ
-    $pdo->prepare("DELETE FROM favorites WHERE id = ?")->execute([$fav['id']]);
+if ($exists) {
+    // ลบ favorite
+    $stmtDel = $pdo->prepare("DELETE FROM favorites WHERE id = ?");
+    $stmtDel->execute([$exists]);
     echo json_encode(['status' => 'removed']);
 } else {
-    // ดึง platform_id แรกของ anime เพื่อผูก (หรือกำหนด default)
-    $platform_stmt = $pdo->prepare("SELECT platform_id FROM anime_platforms WHERE anime_id = ? LIMIT 1");
-    $platform_stmt->execute([$anime_id]);
-    $platform_id = $platform_stmt->fetchColumn();
-
-    if (!$platform_id) {
-        echo json_encode(['error' => 'Anime นี้ไม่มีข้อมูลแพลตฟอร์ม']);
-        exit;
-    }
-
-    $insert = $pdo->prepare("INSERT INTO favorites (user_id, anime_id, platform_id) VALUES (?, ?, ?)");
-    $insert->execute([$user_id, $anime_id, $platform_id]);
-
+    // เพิ่ม favorite
+    $stmtAdd = $pdo->prepare("INSERT INTO favorites (user_id, anime_id, created_at) VALUES (?, ?, NOW())");
+    $stmtAdd->execute([$user_id, $anime_id]);
     echo json_encode(['status' => 'added']);
 }

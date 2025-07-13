@@ -9,7 +9,7 @@ if (!isset($_SESSION['user'])) {
 
 $user_id = $_SESSION['user'];
 
-// ✅ เตรียม $user สำหรับ navbar
+// เตรียม $user สำหรับ navbar
 $stmtUser = $pdo->prepare("SELECT id, name FROM users WHERE id = ?");
 $stmtUser->execute([$user_id]);
 $user = $stmtUser->fetch();
@@ -20,7 +20,7 @@ if (!$user) {
     exit;
 }
 
-// ✅ ลบรายการโปรด
+// ลบรายการโปรด (POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['favorite_id'])) {
     $favorite_id = (int)$_POST['favorite_id'];
 
@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['favorite_id'])) {
     }
 }
 
-// ✅ ดึงรายการโปรด (รองรับฐานข้อมูลใหม่)
+// ดึงรายการโปรด พร้อมข้อมูลที่เกี่ยวข้อง (เพิ่ม anime_platforms.url)
 $stmt = $pdo->prepare("
     SELECT 
         fa.id AS favorite_id,
@@ -45,23 +45,37 @@ $stmt = $pdo->prepare("
         a.cover_image,
         a.next_episode_air_time,
         st.code AS status,
-        src.code AS source,
         p.name AS platform_name,
-        p.url AS platform_url,
+        ap.url AS anime_platform_url,
         GROUP_CONCAT(s.name SEPARATOR ', ') AS studios
     FROM favorites fa
     JOIN anime a ON fa.anime_id = a.id
     LEFT JOIN statuses st ON a.status_id = st.id
-    LEFT JOIN sources src ON a.source_id = src.id
     LEFT JOIN anime_studios ast ON a.id = ast.anime_id
     LEFT JOIN studios s ON ast.studio_id = s.id
     JOIN platforms p ON fa.platform_id = p.id
+    LEFT JOIN anime_platforms ap ON ap.anime_id = a.id AND ap.platform_id = p.id
     WHERE fa.user_id = ?
     GROUP BY fa.id
     ORDER BY a.title_en ASC
 ");
 $stmt->execute([$user_id]);
-$favorites = $stmt->fetchAll();
+$favorites = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// ฟังก์ชันแปลงชื่อ platform เป็น class CSS สีปุ่ม
+function getPlatformClass($platformName) {
+    $map = [
+        'Netflix' => 'btn-netflix',
+        'Bilibili' => 'btn-bilibili',
+        'YouTube' => 'btn-youtube',
+        'Amazon Prime' => 'btn-amazon',
+        'Disney+' => 'btn-disney',
+        'Crunchyroll' => 'btn-crunchyroll',
+        'Hulu' => 'btn-hulu',
+        // เพิ่มแพลตฟอร์มอื่น ๆ ตามต้องการ
+    ];
+    return $map[$platformName] ?? 'btn-platform-default';
+}
 ?>
 
 <!DOCTYPE html>
@@ -75,7 +89,6 @@ $favorites = $stmt->fetchAll();
 </head>
 <body>
 
-<!-- ✅ ใช้ navbar ส่วนกลาง -->
 <?php include 'includes/navbar.php'; ?>
 
 <div class="container py-4">
@@ -101,12 +114,15 @@ $favorites = $stmt->fetchAll();
             </thead>
             <tbody>
                 <?php foreach ($favorites as $fav): ?>
+                    <?php $platformClass = getPlatformClass($fav['platform_name']); ?>
                     <tr>
                         <td style="width: 100px;">
                             <img src="<?= htmlspecialchars($fav['cover_image']) ?>" alt="Cover" class="img-fluid" style="max-height: 100px;">
                         </td>
                         <td>
-                            <a href="anime.php?id=<?= (int)$fav['anime_id'] ?>"><?= htmlspecialchars($fav['title_en']) ?></a>
+                            <a href="anime.php?id=<?= (int)$fav['anime_id'] ?>">
+                                <?= htmlspecialchars($fav['title_en']) ?>
+                            </a>
                         </td>
                         <td><?= htmlspecialchars($fav['status'] ?? '-') ?></td>
                         <td><?= htmlspecialchars($fav['studios'] ?? '-') ?></td>
@@ -114,14 +130,23 @@ $favorites = $stmt->fetchAll();
                             <?= $fav['next_episode_air_time'] ? date('d M Y H:i', strtotime($fav['next_episode_air_time'])) : 'ไม่ระบุ' ?>
                         </td>
                         <td>
-                            <a href="<?= htmlspecialchars($fav['platform_url']) ?>" target="_blank" rel="noopener noreferrer">
-                                <?= htmlspecialchars($fav['platform_name']) ?>
-                            </a>
+                            <?php if (!empty($fav['anime_platform_url'])): ?>
+                                <a href="<?= htmlspecialchars($fav['anime_platform_url']) ?>" class="btn btn-sm <?= $platformClass ?>" target="_blank" rel="noopener noreferrer">
+                                    <i class="bi bi-play-btn-fill me-1"></i>
+                                    <?= htmlspecialchars($fav['platform_name']) ?>
+                                </a>
+                            <?php else: ?>
+                                <span class="btn btn-sm btn-secondary disabled" tabindex="-1" aria-disabled="true">
+                                    ไม่มีลิงก์
+                                </span>
+                            <?php endif; ?>
                         </td>
                         <td>
-                            <form method="POST" onsubmit="return confirm('ต้องการลบรายการโปรดนี้หรือไม่?');">
+                            <form method="POST" onsubmit="return confirm('ต้องการลบรายการโปรดนี้หรือไม่?');" style="display:inline;">
                                 <input type="hidden" name="favorite_id" value="<?= (int)$fav['favorite_id'] ?>">
-                                <button type="submit" class="btn btn-sm btn-danger">ลบ</button>
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="bi bi-trash"></i> ลบ
+                                </button>
                             </form>
                         </td>
                     </tr>
